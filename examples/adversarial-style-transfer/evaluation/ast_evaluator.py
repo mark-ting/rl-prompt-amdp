@@ -6,7 +6,7 @@ from bert_score import BERTScorer
 import sacrebleu as scb
 
 
-class TextStyleTransferEvaluator():
+class AdversarialStyleTransferEvaluator():
     def __init__(self,
                  style_classifier,
                  ppl_lm,
