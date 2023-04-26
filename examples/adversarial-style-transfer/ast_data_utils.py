@@ -32,7 +32,7 @@ def load_adversarial_style_transfer_dataset(
     max_length: Optional[int],
     max_length_tokenizer: Optional[str]
 ) -> Tuple[List[str]]:
-    assert dataset in ['yelp', 'shakespeare']
+    assert dataset in ['yelp']
     assert label in [0, 1]
     assert split in ['train', 'dev', 'test', 'ref']
 
@@ -41,13 +41,6 @@ def load_adversarial_style_transfer_dataset(
         full_filepath = os.path.join(base_path, filepath)
         with open(full_filepath) as f:
             sentences = [line.strip() for line in f]
-
-    elif dataset == 'shakespeare':
-        seed_dict = {0: f'100-100', 1: f'100-13', 2: f'100-21'}
-        filepath = f'{dataset}/100-shot/{seed_dict[dataset_seed]}/{split}.tsv'
-        full_filepath = os.path.join(base_path, filepath)
-        df = pd.read_csv(full_filepath, sep='\t')
-        sentences = df.query(f'label == {label}').text.tolist()
 
     # Option to keep only certain number of examples
     if max_size is not None:
