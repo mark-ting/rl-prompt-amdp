@@ -18,9 +18,9 @@ from rlprompt.models import (LMAdaptorModelConfig, InputConditionedPromptModelCo
 from rlprompt.utils.utils import (colorful_print, compose_hydra_config_store,
                                   get_hydra_output_dir)
 
-from tst_helpers import (PromptedTextStyleTransferRewardConfig,
-                         TextStyleTransferDatasetConfig,
-                         make_prompted_text_style_transfer_reward,
+from ast_helpers import (PromptedAdversarialStyleTransferRewardConfig,
+                         AdversarialStyleTransferDatasetConfig,
+                         make_prompted_adversarial_style_transfer_reward,
                          make_text_style_transfer_datasets,
                          get_style_classifier)
 
@@ -31,14 +31,14 @@ class InputConditionedPromptInferenceConfig:
 
 
 # Compose default config
-config_list = [PromptedTextStyleTransferRewardConfig,
-               TextStyleTransferDatasetConfig, LMAdaptorModelConfig,
-               InputConditionedPromptModelConfig, SQLModuleConfig, 
+config_list = [PromptedAdversarialStyleTransferRewardConfig,
+               AdversarialStyleTransferDatasetConfig, LMAdaptorModelConfig,
+               InputConditionedPromptModelConfig, SQLModuleConfig,
                InputConditionedPromptInferenceConfig, TrainerConfig]
 cs = compose_hydra_config_store('base_tst', config_list)
 
 
-@hydra.main(version_base=None, config_path="./", 
+@hydra.main(version_base=None, config_path="./",
             config_name="input_conditioned_tst_config")
 def main(config: "DictConfig"):
     colorful_print(OmegaConf.to_yaml(config), fg='red')
@@ -58,7 +58,7 @@ def main(config: "DictConfig"):
 
     # config.save_dir = os.path.join(output_dir, config.save_dir)
     trainer = make_trainer(algo_module, train_dataset, test_dataset, config)
-    
+
     eval_dataloader = trainer._get_eval_dataloader(test_dataset)
     model = trainer.module.eval()
     hypos = []
@@ -66,12 +66,12 @@ def main(config: "DictConfig"):
         infer_outputs: Dict[str, Union[torch.Tensor, List[List[str]]]]
         infer_outputs = model.infer(batch)
         hypos += infer_outputs['sample_tokens']
-        
+
     tokenizer = AutoTokenizer.from_pretrained(config.task_lm)
     prompt_strings = [tokenizer.convert_tokens_to_string(t) for t in hypos]
-    
-    with open(config.output_save_path, 'w') as fw: 
-        for s in prompt_strings: 
+
+    with open(config.output_save_path, 'w') as fw:
+        for s in prompt_strings:
             fw.write(s + '\n')
 
 if __name__ == "__main__":

@@ -6,7 +6,7 @@ from typing import List, Tuple, Union, Dict, Any, Optional
 from transformers import pipeline, AutoTokenizer
 from bert_score import BERTScorer
 from collections import defaultdict
-from tst_modules import PromptedGenerator, TextStyleTransferOutputSelector
+from ast_modules import PromptedGenerator, AdversarialStyleTransferOutputSelector
 
 from rlprompt.rewards import BaseReward
 
@@ -15,7 +15,7 @@ SUPPORTED_LMS = ['distilgpt2', 'gpt2', 'gpt2-medium',
                  'gpt2-large', 'gpt2-xl']
 
 
-class PromptedTextStyleTransferReward(BaseReward):
+class PromptedAdversarialStyleTransferReward(BaseReward):
     def __init__(
         self,
         task_lm: str,
@@ -49,9 +49,9 @@ class PromptedTextStyleTransferReward(BaseReward):
         self.num_bootstraps = num_bootstraps
 
         # Loading reward models
-        if style_tokenizer is None: 
+        if style_tokenizer is None:
             style_tokenizer = style_classifier
-        self.selector = TextStyleTransferOutputSelector(style_classifier,
+        self.selector = AdversarialStyleTransferOutputSelector(style_classifier,
                                                         style_tokenizer,
                                                         style_batch_size,
                                                         reward_device)
@@ -134,8 +134,8 @@ class PromptedTextStyleTransferReward(BaseReward):
 
         rewards_tensor = torch.stack(rewards)
         if mode == "train" and self.compute_zscore:
-            rewards_tensor = self._compute_reward_zscores(rewards_tensor, 
-                                                          source_strs, 
+            rewards_tensor = self._compute_reward_zscores(rewards_tensor,
+                                                          source_strs,
                                                           input_rewards)
 
         self.tokens_explored = \

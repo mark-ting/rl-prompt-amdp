@@ -1,12 +1,13 @@
 import os
-import numpy as np 
-import pandas as pd 
+import re
+import numpy as np
+import pandas as pd
 from torch.utils.data import Dataset
 from transformers import AutoTokenizer
 from typing import Optional, Tuple, List
 
 
-class TextStyleTransferDataset(Dataset):
+class AdversarialStyleTransferDataset(Dataset):
     def __init__(self, source_texts, target_labels):
         assert len(source_texts) == len(target_labels)
         self.source_texts = source_texts
@@ -21,7 +22,7 @@ class TextStyleTransferDataset(Dataset):
         return item
 
 
-def load_text_style_transfer_dataset(
+def load_adversarial_style_transfer_dataset(
     dataset: str,
     label: int,
     split: str,

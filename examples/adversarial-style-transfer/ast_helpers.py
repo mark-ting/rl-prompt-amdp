@@ -5,49 +5,49 @@ import os
 from torch.utils.data import Dataset
 from transformers import AutoTokenizer
 from typing import Optional, Tuple, List
-from tst_reward import PromptedTextStyleTransferReward
-from tst_data_utils import (TextStyleTransferDataset, 
-                            load_text_style_transfer_dataset)
+from ast_reward import PromptedAdversarialStyleTransferReward
+from ast_data_utils import (AdversarialStyleTransferDataset,
+                            load_adversarial_style_transfer_dataset)
 
 
 
 def make_text_style_transfer_datasets(
-        config: "DictConfig") -> Tuple[TextStyleTransferDataset]: 
+        config: "DictConfig") -> Tuple[AdversarialStyleTransferDataset]:
     assert config.direction in ['0_to_1', '1_to_0']
     label = int(config.direction[0])
     data_dict = {}
-    for split in ['train', 'dev', 'test']: 
+    for split in ['train', 'dev', 'test']:
         # Hack - Only use 16 examples for Yelp validation to save time
-        if config.dataset == "yelp" and split == 'dev': 
+        if config.dataset == "yelp" and split == 'dev':
             max_size = 16
-        else: 
+        else:
             max_size = config.max_size
 
-        source_texts, target_labels = load_text_style_transfer_dataset(
+        source_texts, target_labels = load_adversarial_style_transfer_dataset(
             config.dataset, label, split,
             config.dataset_seed, config.base_path, max_size,
             config.max_length, config.max_length_tokenizer)
-        tst_dataset = TextStyleTransferDataset(source_texts, target_labels)
+        tst_dataset = AdversarialStyleTransferDataset(source_texts, target_labels)
         data_dict[split] = tst_dataset
 
     return data_dict['train'], data_dict['dev'], data_dict['test']
 
 
-def load_text_style_transfer_test_data(config: "DictConfig"): 
+def load_text_style_transfer_test_data(config: "DictConfig"):
     label = int(config.direction[0])
-    source_texts, target_labels = load_text_style_transfer_dataset(
+    source_texts, target_labels = load_adversarial_style_transfer_dataset(
         config.dataset, label, 'test',
         config.dataset_seed, config.base_path, config.max_size,
         config.max_length, config.max_length_tokenizer)
-    
+
     if config.dataset == 'yelp': # Separate human-written reference
-        ref_texts, _ = load_text_style_transfer_dataset(
-            config.dataset, label, 'ref', 
-            config.dataset_seed, config.base_path, None, 
+        ref_texts, _ = load_adversarial_style_transfer_dataset(
+            config.dataset, label, 'ref',
+            config.dataset_seed, config.base_path, None,
             None, None)
     elif config.dataset == 'shakespeare': # Opposite test data are references
         target_label = int(config.direction[1])
-        ref_texts, _ = load_text_style_transfer_dataset(
+        ref_texts, _ = load_adversarial_style_transfer_dataset(
             config.dataset, target_label, 'test',
             config.dataset_seed, config.base_path, None,
             None, None)
@@ -63,29 +63,29 @@ style_classifier_dict = {
     ('shakespeare', 2, 'train'): './style_classifiers/shakespeare-bert-base-uncased-train-100-2/',
     ('shakespeare', None, 'test'): './style_classifiers/shakespeare-bert-base-uncased-test-all/'}
 def get_style_classifier(
-    split: str, 
+    split: str,
     config: "DictConfig"
-) -> str: 
+) -> str:
     dataset_seed = config.dataset_seed if split != 'test' else None
     return style_classifier_dict[(config.dataset, dataset_seed, split)]
 
 
-def make_prompted_text_style_transfer_reward(
-        config: "DictConfig") -> PromptedTextStyleTransferReward:
-    return PromptedTextStyleTransferReward(
-        config.task_lm, config.task_top_k, config.style_classifier, 
+def make_prompted_adversarial_style_transfer_reward(
+        config: "DictConfig") -> PromptedAdversarialStyleTransferReward:
+    return PromptedAdversarialStyleTransferReward(
+        config.task_lm, config.task_top_k, config.style_classifier,
         config.style_tokenizer,
-        config.style_batch_size, config.pad_token, config.num_repeats, 
-        config.num_samples, config.num_bootstraps, config.compute_zscore, 
+        config.style_batch_size, config.pad_token, config.num_repeats,
+        config.num_samples, config.num_bootstraps, config.compute_zscore,
         config.lower_outputs, config.control_output_length,
         config.template, config.end_punct)
 
 
 @dataclass
-class TextStyleTransferDatasetConfig:
+class AdversarialStyleTransferDatasetConfig:
     dataset: str = "???"
     dataset_seed: Optional[int] = None
-    direction: str = "???" 
+    direction: str = "???"
     base_path: str = './data'
     max_size: Optional[int] = None
     max_length: Optional[int] = None
@@ -93,7 +93,7 @@ class TextStyleTransferDatasetConfig:
 
 
 @dataclass
-class PromptedTextStyleTransferRewardConfig:
+class PromptedAdversarialStyleTransferRewardConfig:
     task_lm: str = 'distilgpt2'
     task_top_k: int = 10
     style_classifier: str = '???'

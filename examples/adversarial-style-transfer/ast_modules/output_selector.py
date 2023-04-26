@@ -5,31 +5,31 @@ from transformers import pipeline
 from bert_score import BERTScorer
 from typing import Tuple, List, Union
 
-class TextStyleTransferOutputSelector: 
+class AdversarialStyleTransferOutputSelector:
     def __init__(
-        self, 
+        self,
         style_classifier: str,
         style_tokenizer: str,
         style_batch_size: int,
         device_id: int
-    ): 
+    ):
         self.device = device_id
         self.style_classifier = pipeline("sentiment-analysis",
                                          model=style_classifier,
                                          tokenizer=style_tokenizer,
                                          device=self.device)
         self.style_batch_size = style_batch_size
-        self.bert_scorer = BERTScorer('roberta-large', 
-                                      device=self.device, 
-                                      rescale_with_baseline=True, 
+        self.bert_scorer = BERTScorer('roberta-large',
+                                      device=self.device,
+                                      rescale_with_baseline=True,
                                       lang='en')
 
     def compute_sample_rewards(
-        self, 
-        source_text: str, 
-        generated_texts: List[str], 
+        self,
+        source_text: str,
+        generated_texts: List[str],
         target_label: str
-    ) -> Tuple[List[float]]: 
+    ) -> Tuple[List[float]]:
         srcs = [source_text for _ in generated_texts]
         hypos = generated_texts
 
@@ -42,7 +42,7 @@ class TextStyleTransferOutputSelector:
         batch_size = self.style_batch_size
         style_rewards = []
         for i, c in enumerate(self.style_classifier(hypo_dataset,
-                                                    batch_size=batch_size, 
+                                                    batch_size=batch_size,
                                                     truncation=True)):
             prob = ((c['label'] == target_label) * c['score']
                     + (c['label'] != target_label) * (1 - c['score']))
@@ -51,22 +51,22 @@ class TextStyleTransferOutputSelector:
                        for c, s in zip(content_rewards, style_rewards)]
 
         return sum_rewards, content_rewards, style_rewards
-        
+
     def select_outputs_batch(
-        self, 
-        source_texts: List[str], 
-        generated_texts: List[List[str]], 
+        self,
+        source_texts: List[str],
+        generated_texts: List[List[str]],
         target_labels: List[str]
     ) -> Tuple[Union[List[str], List[float]]]:
         output_texts = []
         output_rewards = []
         output_contents = []
         output_styles = []
-        for src, hypos, label in tqdm(zip(source_texts, generated_texts, 
+        for src, hypos, label in tqdm(zip(source_texts, generated_texts,
                                           target_labels),
                                       total=len(source_texts)):
             hypos = [h for h in hypos if len(h) > 0]
-            rewards, contents, styles = self.compute_sample_rewards(src, hypos, 
+            rewards, contents, styles = self.compute_sample_rewards(src, hypos,
                                                                     label)
             max_reward = torch.tensor(rewards).float().max()
             top_index = rewards.index(max_reward)
@@ -75,16 +75,16 @@ class TextStyleTransferOutputSelector:
             output_rewards.append(rewards[top_index])
             output_contents.append(contents[top_index])
             output_styles.append(styles[top_index])
-            
+
         return output_texts, output_rewards, output_contents, output_styles
 
 
 class ListDataset(Dataset):
     def __init__(self, data_list):
         self.data_list = data_list
-        
+
     def __getitem__(self, index):
         return self.data_list[index]
-    
+
     def __len__(self):
         return len(self.data_list)

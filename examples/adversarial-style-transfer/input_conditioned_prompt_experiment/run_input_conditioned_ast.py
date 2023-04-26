@@ -13,21 +13,21 @@ from rlprompt.utils.utils import (colorful_print, compose_hydra_config_store,
 
 import sys
 sys.path.append('..')
-from tst_helpers import (PromptedTextStyleTransferRewardConfig,
-                         TextStyleTransferDatasetConfig,
-                         make_prompted_text_style_transfer_reward,
+from ast_helpers import (PromptedAdversarialStyleTransferRewardConfig,
+                         AdversarialStyleTransferDatasetConfig,
+                         make_prompted_adversarial_style_transfer_reward,
                          make_text_style_transfer_datasets,
                          get_style_classifier)
 
 
 # Compose default config
-config_list = [PromptedTextStyleTransferRewardConfig,
-                TextStyleTransferDatasetConfig, LMAdaptorModelConfig,
+config_list = [PromptedAdversarialStyleTransferRewardConfig,
+                AdversarialStyleTransferDatasetConfig, LMAdaptorModelConfig,
                 InputConditionedPromptModelConfig, SQLModuleConfig, TrainerConfig]
 cs = compose_hydra_config_store('base_tst', config_list)
 
 
-@hydra.main(version_base=None, config_path="./", 
+@hydra.main(version_base=None, config_path="./",
             config_name="input_conditioned_tst_config")
 def main(config: "DictConfig"):
     colorful_print(OmegaConf.to_yaml(config), fg='red')
@@ -44,7 +44,7 @@ def main(config: "DictConfig"):
     prompt_model = make_input_conditioned_prompt_model(policy_model, config)
     config.style_classifier = get_style_classifier('train', config)
     config.style_classifier = os.path.join('..', config.style_classifier)
-    reward = make_prompted_text_style_transfer_reward(config)
+    reward = make_prompted_adversarial_style_transfer_reward(config)
     algo_module = make_sql_module(prompt_model, reward, config)
 
     config.save_dir = os.path.join(output_dir, config.save_dir)
