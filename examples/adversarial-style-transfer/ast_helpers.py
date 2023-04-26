@@ -75,7 +75,9 @@ def make_prompted_adversarial_style_transfer_reward(
     return PromptedAdversarialStyleTransferReward(
         config.task_lm, config.task_top_k, config.style_classifier,
         config.style_tokenizer,
-        config.style_batch_size, config.pad_token, config.num_repeats,
+        config.style_batch_size,
+        config.similarity_weight,
+        config.pad_token, config.num_repeats,
         config.num_samples, config.num_bootstraps, config.compute_zscore,
         config.lower_outputs, config.control_output_length,
         config.template, config.end_punct)

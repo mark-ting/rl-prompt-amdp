@@ -23,6 +23,7 @@ class PromptedAdversarialStyleTransferReward(BaseReward):
         style_classifier: str,
         style_tokenizer: Optional[str],
         style_batch_size: int,
+        similarity_weight: float,
         pad_token: str,
         num_repeats: int,  # Num of repetitions for each example
         num_samples: int,  # Num of samples from which to take the output
@@ -54,6 +55,7 @@ class PromptedAdversarialStyleTransferReward(BaseReward):
         self.selector = AdversarialStyleTransferOutputSelector(style_classifier,
                                                         style_tokenizer,
                                                         style_batch_size,
+                                                        similarity_weight,
                                                         reward_device)
 
         # Misc. training details

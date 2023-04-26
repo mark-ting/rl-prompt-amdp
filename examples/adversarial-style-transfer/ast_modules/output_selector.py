@@ -11,6 +11,7 @@ class AdversarialStyleTransferOutputSelector:
         style_classifier: str,
         style_tokenizer: str,
         style_batch_size: int,
+        similarity_weight: float,
         device_id: int
     ):
         self.device = device_id
@@ -19,10 +20,13 @@ class AdversarialStyleTransferOutputSelector:
                                          tokenizer=style_tokenizer,
                                          device=self.device)
         self.style_batch_size = style_batch_size
+        self.similarity_weight = similarity_weight
         self.bert_scorer = BERTScorer('roberta-large',
                                       device=self.device,
                                       rescale_with_baseline=True,
                                       lang='en')
+
+        # TODO: add fluency evaluation (SLOR?)
 
     def compute_sample_rewards(
         self,
@@ -35,7 +39,7 @@ class AdversarialStyleTransferOutputSelector:
 
         # Content preservation reward
         ctc_scores = self.bert_scorer.score(hypos, srcs)[2]
-        content_rewards = [max(s, 0) * 100 for s in ctc_scores.tolist()]
+        content_rewards = [max(s, 0) * 100 * self.similarity_weight for s in ctc_scores.tolist()]
 
         # Style probablility reward
         hypo_dataset = ListDataset(hypos)
