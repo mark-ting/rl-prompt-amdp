@@ -101,6 +101,7 @@ class PromptedAdversarialStyleTransferRewardConfig:
     style_classifier: str = '???'
     style_tokenizer: Optional[str] = None
     style_batch_size: int = 32
+    similarity_weight: float = 2.0
     pad_token: str = '<|endoftext|>'
     num_repeats: int = 4
     num_samples: int = 32
