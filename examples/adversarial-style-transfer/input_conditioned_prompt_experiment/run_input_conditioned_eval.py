@@ -99,7 +99,7 @@ def main(config: "DictConfig"):
                                              total=len(source_texts)):
             generated_texts = generator.sample_generate(
                 prompt, source_text, config.num_samples,
-                config.task_top_k, top_p)
+                config.task_top_k, top_p, temperature=config.task_lm_temperature)
             all_generated_texts.append(generated_texts)
         generated_texts = all_generated_texts
 

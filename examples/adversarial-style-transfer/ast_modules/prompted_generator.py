@@ -72,7 +72,6 @@ class PromptedGenerator:
                                         num_return_sequences=num_samples,
                                         # Only return generated text, without the prompt
                                         return_full_text=False,
-                                        temperature=self.temperature,
                                         **kwargs)
         generated_texts = []
         for output in sample_outputs:
