@@ -47,7 +47,7 @@ def main(config: "DictConfig"):
                                   config.control_output_length)
     train_style_classifier = \
         os.path.join('..', get_style_classifier('train', config))
-    selector = TextStyleTransferOutputSelector(train_style_classifier,
+    selector = AdversarialStyleTransferOutputSelector(train_style_classifier,
                                                config.style_tokenizer,
                                                config.style_batch_size,
                                                device_id)
@@ -88,7 +88,7 @@ def main(config: "DictConfig"):
 
     test_style_classifier = \
         os.path.join('..', get_style_classifier('test', config))
-    evaluator = TextStyleTransferEvaluator(test_style_classifier,
+    evaluator = AdversarialStyleTransferEvaluator(test_style_classifier,
                                            ppl_lm_dict[config.dataset])
     (content, style, fluency, joint_score, gm, bleu, bertscore, ppl) = \
         evaluator.evaluate_output(all_source_texts, all_output_texts,
