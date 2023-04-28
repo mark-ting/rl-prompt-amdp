@@ -51,6 +51,7 @@ def main(config: "DictConfig"):
     selector = AdversarialStyleTransferOutputSelector(train_style_classifier,
                                                config.style_tokenizer,
                                                config.style_batch_size,
+                                               config.similarity_weight,
                                                device_id)
 
     all_source_texts = []
