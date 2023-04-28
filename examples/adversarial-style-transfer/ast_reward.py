@@ -50,6 +50,7 @@ class PromptedAdversarialStyleTransferReward(BaseReward):
         self.top_p = 1.0
         self.num_samples = num_samples
         self.num_bootstraps = num_bootstraps
+        self.task_lm_temperature = task_lm_temperature
 
         # Loading reward models
         if style_tokenizer is None:
