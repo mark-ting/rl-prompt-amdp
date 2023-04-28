@@ -80,6 +80,7 @@ def make_prompted_adversarial_style_transfer_reward(
         config.pad_token, config.num_repeats,
         config.num_samples, config.num_bootstraps, config.compute_zscore,
         config.lower_outputs, config.control_output_length,
+        config.task_lm_temperature,
         config.template, config.end_punct)
 
 
@@ -109,5 +110,6 @@ class PromptedAdversarialStyleTransferRewardConfig:
     compute_zscore: bool = True  # Whether to compute z-score of rewards
     lower_outputs: bool = False  # Whether to convert all outputs to lower case
     control_output_length: bool = False
+    task_lm_temperature: float = 1.5
     template: str = '{prompt} "{sentence_1}" "'
     end_punct: str = '"'

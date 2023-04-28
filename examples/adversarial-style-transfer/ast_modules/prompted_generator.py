@@ -1,4 +1,4 @@
-from transformers import AutoTokenizer, pipeline
+from transformers import AutoTokenizer, pipeline, TextGenerationPipeline
 from torch.utils.data import Dataset
 from tqdm import tqdm
 import json
@@ -14,11 +14,12 @@ class PromptedGenerator:
         pad_token: str,
         device_id: int,
         lower_outputs: bool,
-        control_output_length: bool
+        control_output_length: bool,
+        temperature: float
     ):
         self.tokenizer = AutoTokenizer.from_pretrained(model,
                                                        pad_token=pad_token)
-        self.generator = pipeline("text-generation",
+        self.generator: TextGenerationPipeline = pipeline("text-generation",
                                   model=model,
                                   tokenizer=self.tokenizer,
                                   device=device_id)
@@ -27,6 +28,7 @@ class PromptedGenerator:
         self.end_punct = end_punct
         self.lower_outputs = lower_outputs
         self.control_output_length = control_output_length
+        self.temperature = temperature
 
     def _get_max_new_tokens(
         self,
@@ -70,6 +72,7 @@ class PromptedGenerator:
                                         num_return_sequences=num_samples,
                                         # Only return generated text, without the prompt
                                         return_full_text=False,
+                                        temperature=self.temperature,
                                         **kwargs)
         generated_texts = []
         for output in sample_outputs:
@@ -94,7 +97,8 @@ class PromptedGenerator:
             generated_texts = self.sample_generate(
                 prompt, source_text, num_samples, top_k, top_p,
                 lower_outputs=lower_outputs,
-                control_output_length=control_output_length)
+                control_output_length=control_output_length,
+                temperature=self.temperature)
             all_generated_texts.append(generated_texts)
         return all_generated_texts
 

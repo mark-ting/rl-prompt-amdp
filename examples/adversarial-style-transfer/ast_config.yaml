@@ -11,6 +11,8 @@ style_tokenizer: "bert-base-uncased"
 similarity_weight: 2.0
 lower_outputs: true
 control_output_length: true
+# Task LM
+task_lm_temperature: 1.5
 # Single Prompt Model
 prompt_length: 5
 prompt_train_batch_size: 8

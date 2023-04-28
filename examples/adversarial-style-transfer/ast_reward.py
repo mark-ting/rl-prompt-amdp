@@ -31,6 +31,7 @@ class PromptedAdversarialStyleTransferReward(BaseReward):
         compute_zscore: bool,  # Whether to compute z-score of rewards
         lower_outputs: bool,  # Whether to convert all outputs to lower case
         control_output_length: bool,  # Control output length for speedup
+        task_lm_temperature: float,
         template: str,  # Template for prompt generation
         end_punct: str,  # End punctuation to cut off after generation
     ):
@@ -43,7 +44,8 @@ class PromptedAdversarialStyleTransferReward(BaseReward):
         self.tokenizer = AutoTokenizer.from_pretrained(task_lm)
         self.generator = PromptedGenerator(task_lm, template, end_punct,
                                            pad_token, generator_device,
-                                           lower_outputs, control_output_length)
+                                           lower_outputs, control_output_length,
+                                           task_lm_temperature)
         self.top_k = task_top_k
         self.top_p = 1.0
         self.num_samples = num_samples
@@ -96,7 +98,8 @@ class PromptedAdversarialStyleTransferReward(BaseReward):
                                                      source_strs,
                                                      target_labels)):
             hypos = self.generator.sample_generate(prompt, src, N,
-                                                   self.top_k, self.top_p)
+                                                   self.top_k, self.top_p,
+                                                   temperature=self.task_lm_temperature)
             sum_rewards, content_scores, style_probs = \
                 self.selector.compute_sample_rewards(src, hypos, label)
 
