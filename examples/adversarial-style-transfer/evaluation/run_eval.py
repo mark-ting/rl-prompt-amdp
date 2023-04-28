@@ -44,7 +44,8 @@ def main(config: "DictConfig"):
     generator = PromptedGenerator(config.task_lm, config.template,
                                   config.end_punct, config.pad_token,
                                   device_id, config.lower_outputs,
-                                  config.control_output_length)
+                                  config.control_output_length,
+                                  config.task_lm_temperature)
     train_style_classifier = \
         os.path.join('..', get_style_classifier('train', config))
     selector = AdversarialStyleTransferOutputSelector(train_style_classifier,
