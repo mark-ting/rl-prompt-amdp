@@ -4,6 +4,8 @@ from tqdm import tqdm
 from transformers import pipeline
 from bert_score import BERTScorer
 from typing import Tuple, List, Union
+from scipy.spatial.distance import cosine
+import tensorflow_hub as hub
 
 class AdversarialStyleTransferOutputSelector:
     def __init__(
@@ -26,7 +28,7 @@ class AdversarialStyleTransferOutputSelector:
                                       rescale_with_baseline=True,
                                       lang='en')
 
-        # TODO: add fluency evaluation (SLOR?)
+        self.embedding_similarity_scorer = hub.load("https://tfhub.dev/google/universal-sentence-encoder-large/5")
 
     def compute_sample_rewards(
         self,
@@ -38,8 +40,17 @@ class AdversarialStyleTransferOutputSelector:
         hypos = generated_texts
 
         # Content preservation reward
-        ctc_scores = self.bert_scorer.score(hypos, srcs)[2]
-        content_rewards = [max(s, 0) * 100 * self.similarity_weight for s in ctc_scores.tolist()]
+        # ctc_scores = self.bert_scorer.score(hypos, srcs)[2]
+        # content_rewards = [max(s, 0) * 100 * self.similarity_weight for s in ctc_scores.tolist()]
+
+        # score content using cosine similarity based on USE ala ReinforceBug
+        src_embeddings = self.embedding_similarity_scorer(srcs)
+        hypos_embeddings = self.embedding_similarity_scorer(hypos)
+        content_rewards = [max(1 - cosine(src_embeddings[i], hypos_embeddings[i]), 0.0) * 100 for i in range(len(src_embeddings))]
+
+        for idx, src_str in srcs:
+            if src_str == hypos[idx]:
+                content_rewards[idx] = 0
 
         # Style probablility reward
         hypo_dataset = ListDataset(hypos)
