@@ -5,6 +5,7 @@ from transformers import pipeline
 from bert_score import BERTScorer
 from typing import Tuple, List, Union
 from scipy.spatial.distance import cosine
+import tensorflow as tf
 import tensorflow_hub as hub
 
 class AdversarialStyleTransferOutputSelector:
@@ -27,6 +28,11 @@ class AdversarialStyleTransferOutputSelector:
                                       device=self.device,
                                       rescale_with_baseline=True,
                                       lang='en')
+
+        # do not map entirety of GPU memory immediately
+        gpus = tf.config.experimental.list_physical_devices("GPU")
+        for gpu in gpus:
+            tf.config.experimental.set_memory_growth(gpu, True)
 
         self.embedding_similarity_scorer = hub.load("https://tfhub.dev/google/universal-sentence-encoder-large/5")
 
