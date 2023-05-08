@@ -48,7 +48,7 @@ class AdversarialStyleTransferOutputSelector:
         hypos_embeddings = self.embedding_similarity_scorer(hypos)
         content_rewards = [max(1 - cosine(src_embeddings[i], hypos_embeddings[i]), 0.0) * 100 for i in range(len(src_embeddings))]
 
-        for idx, src_str in srcs:
+        for idx, src_str in enumerate(srcs):
             if src_str == hypos[idx]:
                 content_rewards[idx] = 0
 
